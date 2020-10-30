@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Slí Fuaime</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css" type="text/css">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+      .map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.js"></script>
+</head>
+<body>
+    <div class="container m-4">
+        <h1 class="text-xl">Slí Fuaime</h1>
+
+        <p><em>Sound path.</em> A quick prototype of an idea of sound paths. Follow a route, and listen as it brings you along where it was recorded. Explore the sound scapes by moving through spaces.</p>
+    </div>
+
+  <div id="app" class="container m-4">
+    <p>
+        <button v-if="!isPlaying" v-on:click="play" class="bg-blue-500 text-white py-2 px-4 rounded">Start sound way</button>
+        <button v-if="isPlaying" v-on:click="stop" class="bg-gray-500 text-white py-2 px-4 rounded">Stop</button>
+        <br>
+    </p>
+  </div>
+
+  <div id="map" class="map"></div>
+
+  <div class="container m-4">
+    <p><a href="https://eoinoc.net/sounds-of-limerick-city">Sounds of Limerick City</a></p>
+
+  </div>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        message: 'Hello Vues!',
+        isPlaying: false,
+        latitude: 52.67031,
+        longitude: -8.63951,
+        intervalId: -1,
+        sound: null
+      },
+      methods: {
+          play: function (event) {
+            // Howler audio
+            this.sound = new Howl({
+                src: ['oconnell.mp3']
+            });
+
+            this.isPlaying = true;
+
+            // Fires when the sound finishes playing.
+            this.sound.on('end', function(){
+                this.stop();
+            });
+
+            this.sound.play();
+
+            this.intervalId = window.setInterval(() => {
+                this.longitude = this.longitude + 0.00000001;
+                this.latitude = this.latitude + 0.00000001;
+                var view = this.map.getView();
+                view.adjustCenter([this.longitude, this.latitude]);
+                // this.map.render();
+                console.log("updated");
+            }, 2000)
+
+          },
+          stop: function(event) {
+              this.isPlaying = false;
+              this.sound.stop();
+              window.clearInterval(this.intervalId);
+          }
+      },
+      mounted: function () {
+        this.map = map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([this.longitude, this.latitude]),
+                zoom: 18
+            })
+        });
+
+
+      }
+
+    })
+  </script>
+    <script type="text/javascript">
+      // Open Layers -->
+      
+
+      
+    </script>
+
+</body>
+</html>
